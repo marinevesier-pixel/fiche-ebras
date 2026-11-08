@@ -513,7 +513,7 @@ function buildSyn(){
     fld("Couleur finale (N / R / J / V)",colSel,"f-couleur","full"),
     fld("Photos / vidéos disponibles",ph,"f-photos"),
     fld("Possibilité de déclassement",dc,"f-declass"),
-    fld("Avis et commentaires finaux",av,"f-avisfin","full")));
+    fld("Avis et commentaires finaux",av,"f-avisfin","full")));f.append(photoBox());
   f.append(el("div",{class:"grp"},"Propositions d'idées de manœuvre au COS"));
   var cs=rowState("cos");
   var cosRow={id:"cos",l:"Mesures proposées",o:COS};
@@ -683,6 +683,55 @@ function sharePdf(doc,nm){
     if(to.length)window.location.href="mailto:"+to.join(",")+"?subject="+encodeURIComponent(sujet)+"&body="+encodeURIComponent("Fiche EBRAS en pièce jointe (PDF).");
   }
 }
+* ---------- Photos ---------- */
+var PKEY="ebras-v4-photos",PMAX=12;
+var P=[];
+try{P=JSON.parse(localStorage.getItem(PKEY)||"[]")}catch(e){P=[]}
+function saveP(){try{localStorage.setItem(PKEY,JSON.stringify(P));return true}catch(e){return false}}
+function shrink(file){
+  return new Promise(function(ok,ko){
+    var url=URL.createObjectURL(file),im=new Image();
+    im.onload=function(){
+      var k=Math.min(1,1000/Math.max(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k);
+      var c=document.createElement("canvas");c.width=w;c.height=h;
+      c.getContext("2d").drawImage(im,0,0,w,h);
+      URL.revokeObjectURL(url);
+      ok({d:c.toDataURL("image/jpeg",0.6),w:w,h:h});
+    };
+    im.onerror=function(){URL.revokeObjectURL(url);ko()};
+    im.src=url;
+  });
+}
+function photoBox(){
+  var box=el("div",{}),grid=el("div",{class:"card chips"}),note=el("p",{class:"sendmsg",role:"status","aria-live":"polite"});
+  var inp=el("input",{type:"file",accept:"image/*",multiple:true,hidden:true});
+  function paint(){
+    grid.textContent="";grid.hidden=!P.length;
+    P.forEach(function(p,i){
+      grid.append(el("div",{class:"chip"},
+        el("img",{src:p.d,alt:"Photo "+(i+1),style:"display:block;width:100%;border-radius:4px;margin-bottom:8px"}),
+        el("button",{class:"btn alt",type:"button",onclick:function(){P.splice(i,1);saveP();paint()}},"Supprimer")));
+    });
+    note.textContent=P.length?P.length+" photo(s) sur "+PMAX+" maximum. Elles seront ajoutées à la fin du PDF.":"Aucune photo pour l'instant.";
+  }
+  inp.addEventListener("change",function(){
+    var files=Array.prototype.slice.call(inp.files||[]),chain=Promise.resolve();
+    files.forEach(function(fl){chain=chain.then(function(){
+      if(P.length>=PMAX){toast("Maximum "+PMAX+" photos");return}
+      return shrink(fl).then(function(r){
+        P.push(r);
+        if(!saveP()){P.pop();toast("Mémoire pleine : photo non ajoutée")}
+      },function(){toast("Photo illisible")});
+    })});
+    chain.then(function(){inp.value="";paint()});
+  });
+  box.append(el("div",{class:"grp"},"Photos"),
+    el("div",{class:"actions"},el("button",{class:"btn",type:"button",onclick:function(){inp.click()}},"📷 Prendre ou ajouter des photos")),
+    grid,note,inp);
+  paint();
+  condList.push({w:box,f:function(f){return f.photos==="Oui"}});
+  return box;
+}
 /* ---------- Rapport PDF ---------- */
 function latin(t){return String(t).replace(/[–—]/g,"-").replace(/…/g,"...").replace(/œ/g,"oe").replace(/Œ/g,"OE").replace(/[’‘]/g,"'").replace(/[“”«»]/g,'"').replace(/[^\x00-\xFF]/g,"")}
 function makePdf(share){
@@ -719,7 +768,18 @@ function makePdf(share){
   need(30);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(9.5);
   doc.text(latin("Signature de l'évaluateur :"),M,y);doc.text(latin("Visa du COS :"),W/2+5,y);
   doc.setDrawColor(180,180,180);doc.rect(M,y+2,W/2-M-5,20);doc.rect(W/2+5,y+2,W/2-M-5,20);
-  var n=doc.getNumberOfPages();
+  if(S.f.photos==="Oui"&&P.length){
+  page();doc.setFillColor(251,227,211);doc.rect(M,y-4.2,W-2*M,6.5,"F");
+  doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(122,47,12);
+  doc.text("PHOTOS",M+2,y);doc.setTextColor(23,32,44);y+=lh+4;
+  P.forEach(function(p,i){
+    var k=Math.min((W-2*M)/p.w,105/p.h),w=p.w*k,h=p.h*k;
+    need(h+10);
+    try{doc.addImage(p.d,"JPEG",M,y,w,h)}catch(e){}
+    doc.setFont("helvetica","normal");doc.setFontSize(8);doc.text("Photo "+(i+1)+" / "+P.length,M,y+h+4);
+    y+=h+9;
+  });
+}var n=doc.getNumberOfPages();
   for(var i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(7.5);doc.setTextColor(110,110,110);
     doc.text(latin("Adaptation de la fiche EBRAS V4 (ECASC). Ne remplace pas l'expertise de professionnels qualifiés."),M,290);
     doc.text(i+" / "+n,W-M,290,{align:"right"})}
@@ -780,7 +840,7 @@ function copyReport(box){
 }
 function reset(){
   S={f:{},r:{},c:{},id:newId()};
-  try{localStorage.removeItem(KEY)}catch(e){}
+  try{localStorage.removeItem(KEY)}catch(e){}P=[];try{localStorage.removeItem(PKEY)}catch(e){}
   cur="id";build();window.scrollTo(0,0);toast("Fiche effacée");
 }
 
