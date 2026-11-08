@@ -519,7 +519,7 @@ function buildSyn(){
   var cosRow={id:"cos",l:"Mesures proposées",o:COS};
   f.append(el("div",{class:"card fgrid"},el("div",{class:"fld full"},multi(cosRow,cs))));
   f.append(el("p",{class:"legend"},"Le COS doit obligatoirement faire un compte rendu au DOS ou à son représentant après toute évaluation bâtimentaire."));
-  var rep=el("textarea",{id:"rep",readonly:true,hidden:true});
+  f.append(mailBox());var rep=el("textarea",{id:"rep",readonly:true,hidden:true});
   var conf=el("div",{class:"confirm",hidden:true},
     el("p",{},"Effacer toutes les données de cette fiche ? Cette action est définitive."),
     el("div",{class:"actions"},
