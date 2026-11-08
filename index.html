@@ -598,7 +598,6 @@ function payload(){
     "Couleur finale":f.couleur||"",
     "Site-Sol":lvl("sol"),"Environnement":lvl("env"),"Structure":lvl("str"),"ENS":lvl("ens"),
     "Mesures proposées au COS":cs&&cs.i.length?cs.i.join(" ; ")+(cs.o?" ; "+cs.o:""):"",
-    "Compte rendu complet":report(),
     "Données brutes":JSON.stringify({f:S.f,r:S.r,c:S.c})
   }};
 }
