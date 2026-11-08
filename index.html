@@ -1,0 +1,735 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Fiche EBRAS</title>
+<meta name="robots" content="noindex,nofollow">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: formulaire de terrain en colonne unique, en-tête fixe, un onglet par rubrique de la fiche papier, navigation en bas */
+:root{
+  --font-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --font-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --bg:#eceff3; --surface:#ffffff; --field:#f6f8fb; --fg:#17202c; --muted:#566274; --line:#d3d9e2;
+  --hdr:#1c2b45; --hdr-fg:#ffffff;
+  --accent:#1f4a8a; --accent-fg:#ffffff; --warm:#e0662a;
+  --band:#fbe3d3; --band-fg:#7a2f0c;
+  --nl:#3f8f2f; --nl-bg:#dcefd5; --nl-fg:#1d4a12;
+  --m:#b89700; --m-bg:#fbf0a8; --m-fg:#4d4000;
+  --i:#c62828; --i-bg:#f8d4d2; --i-fg:#6e1010;
+  --di:#111111; --di-bg:#1a1a1a; --di-fg:#ffffff;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --surface:#18202a; --field:#121921; --fg:#e7ebf1; --muted:#9aa6b6; --line:#2c3744;
+  --hdr:#0a0f16; --hdr-fg:#e7ebf1; --accent:#8fb4ee; --accent-fg:#0f141b; --warm:#ee8450;
+  --band:#3a2417; --band-fg:#f5c3a3;
+  --nl:#5fb24d; --nl-bg:#1f3a1a; --nl-fg:#bfe6b3;
+  --m:#d9b800; --m-bg:#4a4000; --m-fg:#fff1a0;
+  --i:#e5605b; --i-bg:#4a1717; --i-fg:#ffc9c6;
+  --di:#9a9a9a; --di-bg:#000000; --di-fg:#ffffff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#18202a; --field:#121921; --fg:#e7ebf1; --muted:#9aa6b6; --line:#2c3744;
+  --hdr:#0a0f16; --hdr-fg:#e7ebf1; --accent:#8fb4ee; --accent-fg:#0f141b; --warm:#ee8450;
+  --band:#3a2417; --band-fg:#f5c3a3;
+  --nl:#5fb24d; --nl-bg:#1f3a1a; --nl-fg:#bfe6b3;
+  --m:#d9b800; --m-bg:#4a4000; --m-fg:#fff1a0;
+  --i:#e5605b; --i-bg:#4a1717; --i-fg:#ffc9c6;
+  --di:#9a9a9a; --di-bg:#000000; --di-fg:#ffffff; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.4;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 96px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--hdr)}
+.wrap{max-width:640px;margin:0 auto}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--hdr);color:var(--hdr-fg);
+  margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px))) calc(-1 * max(16px,env(safe-area-inset-right,0px)));
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
+.top-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.mark{width:30px;height:30px;flex:none}
+.ttl{min-width:0;flex:1}
+.ttl b{display:block;font:700 22px/1 var(--font-display);letter-spacing:.04em;text-transform:uppercase}
+.ttl span{display:block;font-size:12px;opacity:.75;margin-top:2px}
+.prog{font:500 12px var(--font-mono);text-align:right;white-space:nowrap}
+.bar{max-width:640px;margin:8px auto 0;height:4px;border-radius:2px;background:rgba(255,255,255,.18);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--warm);transition:width .25s}
+
+.notice{margin:14px 0 0;padding:10px 12px;border:1px solid var(--line);background:var(--surface);border-radius:6px;font-size:13px;color:var(--muted)}
+.notice b{color:var(--fg)}
+
+.band{margin:18px 0 0;padding:8px 12px;background:var(--band);color:var(--band-fg);text-align:center;
+  font:700 18px/1.1 var(--font-display);letter-spacing:.08em;text-transform:uppercase;border-radius:3px}
+.legend{margin:8px 0 0;font-size:12px;color:var(--muted)}
+.legend b{font-weight:600}
+
+.grp{margin:18px 0 2px;font:600 14px var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
+.fld{min-width:0;display:flex;flex-direction:column;gap:4px}
+.fld.full{grid-column:1/-1}
+.fld label,.lab{font:600 12px var(--font-display);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-size:13px}
+input[type=text],input[type=number],input[type=date],input[type=datetime-local],select,textarea{
+  width:100%;min-width:0;font:inherit;font-size:16px;color:var(--fg);background:var(--field);
+  border:1px solid var(--line);border-radius:5px;padding:9px 10px;min-height:42px}
+textarea{resize:vertical;min-height:84px}
+select{appearance:auto;text-overflow:ellipsis}
+.mono{font-family:var(--font-mono);font-size:15px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.rows{margin-top:6px;border-top:1px solid var(--line)}
+.row{padding:10px 0 12px;border-bottom:1px solid var(--line)}
+.rl{font-weight:600;font-size:14px;margin-bottom:6px}
+.sub{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.sub .fld label{font-size:11px}
+.sub select{min-height:38px;font-size:15px;padding:6px 8px}
+
+details.ms{border:1px solid var(--line);border-radius:5px;background:var(--field)}
+details.ms summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:9px 10px;min-height:42px}
+details.ms summary::-webkit-details-marker{display:none}
+details.ms .mt{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere}
+details.ms .mt.ph{color:var(--muted)}
+details.ms .chev{flex:none;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-2px);transition:transform .15s}
+details.ms[open] .chev{transform:rotate(225deg) translate(-2px,0)}
+details.ms[open]{border-color:var(--accent)}
+.mp{border-top:1px solid var(--line);padding:4px 6px 8px;background:var(--surface);border-radius:0 0 5px 5px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:9px 6px;font-size:15px;cursor:pointer}
+.opt input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--accent)}
+.oth{margin:2px 4px 0;width:calc(100% - 8px)}
+
+select[data-n]{font-weight:600}
+select[data-n="N-L"]{background:var(--nl-bg);color:var(--nl-fg);border-color:var(--nl)}
+select[data-n="M"]{background:var(--m-bg);color:var(--m-fg);border-color:var(--m)}
+select[data-n="I"]{background:var(--i-bg);color:var(--i-fg);border-color:var(--i)}
+select[data-n="DI"]{background:var(--di-bg);color:var(--di-fg);border-color:var(--di)}
+select[data-c="V"]{background:var(--nl-bg);color:var(--nl-fg);border-color:var(--nl);font-weight:600}
+select[data-c="J"]{background:var(--m-bg);color:var(--m-fg);border-color:var(--m);font-weight:600}
+select[data-c="R"]{background:var(--i-bg);color:var(--i-fg);border-color:var(--i);font-weight:600}
+select[data-c="N"]{background:var(--di-bg);color:var(--di-fg);border-color:var(--di);font-weight:600}
+
+.concl{margin-top:16px;padding:12px;border:2px solid var(--fg);border-radius:6px;background:var(--surface)}
+.concl h3{margin:0 0 4px;font:700 17px var(--font-display);letter-spacing:.06em;text-transform:uppercase}
+.hint{font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.concl .fld+.fld{margin-top:10px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px}
+.chip{flex:1 1 140px;min-width:0;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--field)}
+.chip small{display:block;font:600 12px var(--font-display);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.chip b{font-size:15px}
+.chip[data-n="N-L"]{background:var(--nl-bg);color:var(--nl-fg);border-color:var(--nl)}
+.chip[data-n="M"]{background:var(--m-bg);color:var(--m-fg);border-color:var(--m)}
+.chip[data-n="I"]{background:var(--i-bg);color:var(--i-fg);border-color:var(--i)}
+.chip[data-n="DI"]{background:var(--di-bg);color:var(--di-fg);border-color:var(--di)}
+.chip[data-n] small{color:inherit;opacity:.8}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.btn{font:600 16px var(--font-body);min-height:46px;padding:10px 16px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);cursor:pointer;flex:1 1 180px}
+.btn.alt{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn.danger{background:var(--i);border-color:var(--i);color:#fff}
+.confirm{margin-top:12px;padding:12px;border:1px solid var(--i);border-radius:6px;background:var(--surface)}
+.confirm p{margin:0 0 10px}
+.confirm .actions{margin-top:0}
+#rep{margin-top:12px;min-height:220px;font-family:var(--font-mono);font-size:13px}
+.foot{margin:22px 0 0;font-size:12px;color:var(--muted)}
+.loc{padding:12px 12px 0;display:flex;flex-wrap:wrap;gap:8px}
+.loc .btn{flex:1 1 150px;min-height:44px;font-size:15px}
+.loc .btn:disabled{opacity:.6;cursor:wait}
+.locmsg{flex:1 1 100%;margin:0;font-size:13px;color:var(--muted);min-height:1em}
+.locmsg a{color:var(--accent)}
+.sendmsg{margin:10px 0 0;font-size:13px;color:var(--muted)}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding:0 max(0px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(0px,env(safe-area-inset-left,0px))}
+.tabs-in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+.tab{position:relative;min-width:0;border:0;background:transparent;color:var(--muted);cursor:pointer;
+  font:600 13px var(--font-display);letter-spacing:.05em;text-transform:uppercase;padding:14px 2px 13px;border-top:3px solid transparent}
+.tab[aria-selected="true"]{color:var(--fg);border-top-color:var(--warm)}
+.tab .dot{position:absolute;top:7px;right:calc(50% - 22px);width:8px;height:8px;border-radius:50%;background:var(--nl)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:40;
+  background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:6px;font-weight:600;font-size:14px}
+@media (max-width:380px){.fgrid{grid-template-columns:1fr}.tab{font-size:12px;letter-spacing:.02em}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="top-in">
+      <svg class="mark" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M15 6 L24 22 H6 Z" fill="#e0662a"/><path d="M15 12 L19.5 20 H10.5 Z" fill="#1c2b45"/></svg>
+      <div class="ttl"><b>Fiche EBRAS</b><span>Relevé des dommages · version 4, sept. 2024</span></div>
+      <div class="prog" id="prog">0/8</div>
+    </div>
+    <div class="bar"><i id="barfill"></i></div>
+  </header>
+  <main id="main"></main>
+  <p class="foot">Adaptation de la fiche EBRAS V4 (ECASC). Diffusion soumise à l'autorisation préalable de l'ECASC. La fiche reste enregistrée sur ce téléphone jusqu'à son envoi.</p>
+</div>
+<nav class="tabs" aria-label="Rubriques de la fiche"><div class="tabs-in" id="tabs" role="tablist"></div></nav>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)};
+function el(t,a){
+  var e=document.createElement(t),k,args=Array.prototype.slice.call(arguments,2);
+  a=a||{};
+  for(k in a){
+    if(k==="class")e.className=a[k];
+    else if(k.slice(0,2)==="on")e.addEventListener(k.slice(2),a[k]);
+    else if(a[k]===true)e.setAttribute(k,"");
+    else if(a[k]!==false&&a[k]!=null)e.setAttribute(k,a[k]);
+  }
+  (function add(list){list.forEach(function(x){
+    if(x==null||x===false)return;
+    if(Array.isArray(x))add(x);else e.append(x.nodeType?x:document.createTextNode(x));
+  })})(args);
+  return e;
+}
+
+/* ---------- Données de la fiche ---------- */
+var LV=[["N-L","N-L – Nul à léger"],["M","M – Modéré"],["I","I – Important"],["DI","DI – Danger immédiat"]];
+var EX=[["L","L – Localisés"],["G","G – Généralisés"]];
+var RANK={"N-L":1,"M":2,"I":3,"DI":4};
+var NS=["Chaînés","Non chaînés","Non armés"];
+var ONE=function(x){return [x]};
+
+var ID_GROUPS=[
+ {g:"Localisation",f:[
+  {k:"gps",l:"Coord. GPS",t:"text",ph:"ex. 43.5297, 5.4474",mono:1,full:1},
+  {k:"cad",l:"Coord. cadastrale",t:"text",mono:1},
+  {k:"crss",l:"N° CRSS",t:"text",mono:1},
+  {k:"adresse",l:"Adresse du bâtiment",t:"text",full:1},
+  {k:"cp",l:"Code postal",t:"text",im:"numeric"},
+  {k:"ville",l:"Ville",t:"text"}]},
+ {g:"Équipe et relevé",f:[
+  {k:"eval1",l:"Évaluateur 1",t:"text",full:1},
+  {k:"part2",l:"Participant 2",t:"text"},
+  {k:"qual",l:"Qualité",t:"select",o:["RB","USAR","Autre"]},
+  {k:"dt",l:"Date / heure du relevé",t:"datetime-local",full:1},
+  {k:"binome",l:"ID binôme",t:"text",full:1}]},
+ {g:"Événement",f:[
+  {k:"origine",l:"Origine présumée des dommages",t:"select",full:1,o:["Séisme","Inondation","Incendie","Explosion","Mouvement de terrain","Tempête / vent","Effondrement","Autre"]},
+  {k:"anterieur",l:"Événement antérieur ou épisode",t:"select",o:["Non","Oui"]},
+  {k:"antdate",l:"Si oui, date",t:"date",show:function(f){return f.anterieur==="Oui"}},
+  {k:"antnat",l:"Nature",t:"select",o:["Séisme","Inondation","Incendie","Explosion","Mouvement de terrain","Tempête / vent","Autre"],show:function(f){return f.anterieur==="Oui"}}]},
+ {g:"Bâtiment",f:[
+  {k:"dest",l:"Destination du bâtiment",t:"select",full:1,o:["Habitation individuelle","Habitation collective","ERP","Bureaux","Commerce","Industrie / entrepôt","Agricole","Mixte","Autre"]},
+  {k:"type",l:"Type",t:"select",o:["Non ERP","J","L","M","N","O","P","R","S","T","U","V","W","X","Y","PA","CTS","SG","PS","GA","OA","REF","EF"]},
+  {k:"cat",l:"Catégorie",t:"select",o:["1re catégorie","2e catégorie","3e catégorie","4e catégorie","5e catégorie"]},
+  {k:"capa",l:"Capacité (occupants habituels)",t:"number",im:"numeric",full:1},
+  {k:"posit",l:"Positionnement du bâtiment",t:"select",full:1,o:["Isolé","Jumelé","En pâté","En bande","En bout"]},
+  {k:"sys",l:"Système constructif",t:"select",o:["Murs porteurs","Structure poteaux-poutres","Autre"]},
+  {k:"sysautre",l:"Autre système, préciser",t:"text",show:function(f){return f.sys==="Autre"}},
+  {k:"lng",l:"Emprise au sol : longueur (m)",t:"number",im:"decimal"},
+  {k:"lrg",l:"Emprise au sol : largeur (m)",t:"number",im:"decimal"},
+  {k:"niv",l:"Nombre de niveaux sup. (R+)",t:"select",o:["R+0","R+1","R+2","R+3","R+4","R+5","R+6","R+7","R+8","R+9","R+10","Plus de R+10"]},
+  {k:"ssol",l:"Nombre de sous-sols (Qté)",t:"select",o:["0","1","2","3","4","5 ou plus"]},
+  {k:"epoque",l:"Époque présumée de construction",t:"select",full:1,o:["Très ancienne (< 1900)","Ancienne (1900 – 1980)","Actuelle (> 1980)"]},
+  {k:"annee",l:"Année",t:"number",im:"numeric"},
+  {k:"degre",l:"Degré de dommages estimé (%)",t:"select",o:["0 %","5 %","10 %","20 %","30 %","40 %","50 %","60 %","70 %","80 %","90 %","100 %"]},
+  {k:"matd",l:"Présence de matières dangereuses",t:"select",o:["Non","Oui"]},
+  {k:"matnat",l:"Nature",t:"select",o:["Gaz","Hydrocarbures","Produits chimiques","Amiante","Explosifs","Autre"],show:function(f){return f.matd==="Oui"}}]},
+ {g:"Remarques particulières",f:[{k:"rem",l:"Remarques",t:"area",full:1}]}
+];
+
+var SEC={
+ sol:{tab:"Site-Sol",title:"Site – Sol",concl:"Conclusion pour Site-Sol",groups:[
+  {g:"Morphologie du site",rows:[
+   {id:"morpho",l:"Morphologie",o:["À plat","En pente","Implantation au sommet","Bord de falaise","Rupture de pente","Autre"]}]},
+  {g:"Sol",rows:[
+   {id:"fond1",l:"Sol de fondation avec",o:["Tassements (différentiel ou généralisé)","Affouillements"]},
+   {id:"fond2",l:"Sol de fondation avec (suite)",o:["Dépôt de matériaux / engravement","Autre"]},
+   {id:"senv1",l:"Sol environnant présentant",o:["Fissurations","Liquéfaction","Mouvements de terrain","Fontis"]},
+   {id:"senv2",l:"Sol environnant présentant (suite)",o:["Autre"]},
+   {id:"geo",l:"Risques majeurs recensés sur la commune (info.GéoRisques)",o:["Oui","Non"],s:1}]}]},
+ env:{tab:"Environ.",title:"Environnement",concl:"Conclusion pour Environnement",groups:[
+  {g:"",rows:[
+   {id:"chute",l:"Chute / projection d'éléments voisins (arbres, blocs rocheux, pylônes…)",o:["Arbres","Blocs rocheux","Pylônes","Autre"]},
+   {id:"constr",l:"Constructions / installations voisines menaçantes",o:["Explosion","Incendie","Effondrement"]},
+   {id:"travaux",l:"Travaux à proximité",o:["Travaux à proximité"]},
+   {id:"reseaux",l:"Réseaux (VRD) menaçants (gaz, électrique, eaux…)",o:["Gaz","Électrique","Eaux","Autre"]},
+   {id:"eautre",l:"Autre",o:["Autre"]}]}]},
+ str:{tab:"Structure",title:"Éléments de structure",concl:"Conclusion pour les éléments de structure",groups:[
+  {g:"Fondations et infrastructures",rows:[
+   {id:"fd1",l:"Fondations",o:["Absence de fondations (bâtiment ancien)","Semelles isolées","Semelles filantes"]},
+   {id:"fd2",l:"Fondations (suite)",o:["Radier","Pieux / micro-pieux / puits","Non visible"]}]},
+  {g:"Éléments des structures verticales",rows:[
+   {id:"mpierre",l:"Murs maçonnés en pierre",o:NS},
+   {id:"mbrique",l:"Murs maçonnés en brique",o:NS},
+   {id:"mbloc",l:"Murs maçonnés en bloc de béton",o:NS},
+   {id:"mterre",l:"Murs en terre crue",o:["Pisé","Bauge","Adobe","Torchis"]},
+   {id:"ba",l:"Béton armé",o:["Voile","Poteaux"]},
+   {id:"bois",l:"Bois",o:["Panneaux","Poteaux","Palée de stabilité"]},
+   {id:"metal",l:"Métal",o:["Poteaux","Palée de stabilité"]},
+   {id:"rempl",l:"Remplissage",o:["Maçonnerie","Torchis","Autre"]},
+   {id:"esc",l:"Escalier",o:["Escalier concerné"]},
+   {id:"vautre",l:"Autre",o:["Autre"]}]},
+  {g:"Éléments des structures horizontales",rows:[
+   {id:"linteaux",l:"Linteaux, arcs, voûtes",o:["Linteaux","Arc de décharge","Voûte"]},
+   {id:"poutres",l:"Poutres",o:["Bois","Béton armé","Métallique"]},
+   {id:"planchers",l:"Planchers",o:["Bois","Dalle béton armé","Poutrelles & entrevous","Voutain","Collaborant","Autre"]},
+   {id:"balcon",l:"Balcon",o:["Balcon concerné"]},
+   {id:"hautre",l:"Autre",o:["Autre"]}]},
+  {g:"Toiture",rows:[
+   {id:"charp1",l:"Charpente",o:["Traditionnelle en bois","Fermettes bois","Métallique","Bois composite (BLC)"]},
+   {id:"charp2",l:"Charpente (suite)",o:["Béton armé","Toiture-terrasse","Autre"]}]},
+  {g:"Dommages préexistants et liaisons",rows:[
+   {id:"preex",l:"Dommages initiaux préexistants (vétusté, défaut d'entretien…)",o:["Dommages préexistants constatés"]},
+   {id:"liais",l:"Liaisons – assemblages (descente de charges interrompue)",o:["Descente de charges interrompue"]}]}]},
+ ens:{tab:"ENS",title:"Éléments non structuraux (ENS)",concl:"Conclusion pour les éléments non structuraux",groups:[
+  {g:"",rows:[
+   {id:"couv",l:"Couverture",o:["Tuiles","Tôles","Ardoises","Pierre","Végétalisation","Bois","Autre"]},
+   {id:"facade",l:"Façade",o:["Vêture","Bardage","Isolation extérieure","Mur-rideau","Autre"]},
+   {id:"cloisons",l:"Cloisons non porteuses / doublages",o:["Concernés"]},
+   {id:"plafonds",l:"Plafonds suspendus",o:["Concernés"]},
+   {id:"plsurel",l:"Planchers surélevés",o:["Concernés"]},
+   {id:"maco",l:"Éléments maçonnés",o:["Acrotères","Garde-corps","Balustre","Souche de cheminée","Corniche"]},
+   {id:"menu",l:"Menuiseries extérieures (fenêtres, portes-fenêtres)",o:["Concernées"]},
+   {id:"rapp",l:"Éléments rapportés",o:["Marquise","Auvent","Vérandas"]},
+   {id:"eaut",l:"Autre",o:["Autre"]}]}]}
+};
+var ORDER=["id","sol","env","str","ens","syn"];
+var TABNAMES={id:"Ident.",sol:"Site-Sol",env:"Environ.",str:"Structure",ens:"ENS",syn:"Synthèse"};
+var COLORS=[["N","N – Noir"],["R","R – Rouge"],["J","J – Jaune"],["V","V – Vert"]];
+var COS=["Évacuation des occupants du bâtiment","Interdiction temporaire d'accès au bâtiment","Zone d'exclusion pour tous les intervenants","Périmètre de sécurité","Purge des éléments dangereux du bâtiment","Protection – bâchage des parties endommagées","Confortement pour sécurisation (étais…)","Autres mesures proposées"];
+
+/* ---------- État ---------- */
+/* Adresse du script Google qui range chaque fiche envoyée dans le tableau des résultats */
+var ENDPOINT="";
+var KEY="ebras-v4-brouillon",QKEY="ebras-v4-envois";
+var S={f:{},r:{},c:{}};
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&typeof p==="object"){S.f=p.f||{};S.r=p.r||{};S.c=p.c||{};S.id=p.id;S.sent=p.sent}}}catch(e){}
+function newId(){return "F"+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6).toUpperCase()}
+if(!S.id)S.id=newId();
+function nowLocal(){var d=new Date(),z=function(n){return String(n).padStart(2,"0")};
+  return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"T"+z(d.getHours())+":"+z(d.getMinutes())}
+var cur="id";
+var condList=[],hintList=[];
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}refreshAll()}
+function rowState(id){return S.r[id]||(S.r[id]={i:[],o:"",e:"",n:""})}
+function conState(k){return S.c[k]||(S.c[k]={n:"",e:"",t:""})}
+
+/* ---------- Composants ---------- */
+function sel(id,opts,val,onchange,cls){
+  var s=el("select",{id:id,class:cls||""},el("option",{value:""},"—"),opts.map(function(o){
+    var v=Array.isArray(o)?o[0]:o,l=Array.isArray(o)?o[1]:o;return el("option",{value:v},l)}));
+  s.value=val||"";
+  var h=function(){onchange(s.value,s)};
+  s.addEventListener("change",h);
+  return s;
+}
+function fld(label,ctrl,id,cls){return el("div",{class:"fld"+(cls?" "+cls:"")},el("label",{for:id},label),ctrl)}
+
+function idField(d){
+  var id="f-"+d.k,inp;
+  if(d.t==="select")inp=sel(id,d.o,S.f[d.k],function(v){S.f[d.k]=v;save()});
+  else if(d.t==="area"){inp=el("textarea",{id:id,rows:3});inp.value=S.f[d.k]||"";inp.addEventListener("input",function(){S.f[d.k]=inp.value;save()})}
+  else{
+    inp=el("input",{id:id,type:d.t,placeholder:d.ph||null,inputmode:d.im||null,autocomplete:"off",autocapitalize:d.t==="text"?"sentences":null,class:d.mono?"mono":""});
+    inp.value=S.f[d.k]||"";inp.addEventListener("input",function(){S.f[d.k]=inp.value;save()});
+  }
+  var w=fld(d.l,inp,id,d.full?"full":"");
+  if(d.show)condList.push({w:w,f:d.show});
+  return w;
+}
+
+function multi(r,st){
+  var d=el("details",{class:"ms"}),txt=el("span",{class:"mt ph"},"Sélectionner…");
+  d.append(el("summary",{},txt,el("i",{class:"chev"})));
+  var panel=el("div",{class:"mp"}),other=el("input",{type:"text",class:"oth",placeholder:"Préciser…",autocomplete:"off"});
+  var cbs=[];
+  var hasOther=r.o.some(function(o){return o.indexOf("Autre")===0});
+  function paint(){
+    if(st.i.length){txt.textContent=st.i.join(", ");txt.className="mt"}
+    else{txt.textContent="Sélectionner…";txt.className="mt ph"}
+    other.hidden=!(hasOther&&st.i.some(function(o){return o.indexOf("Autre")===0}));
+  }
+  r.o.forEach(function(o){
+    var cb=el("input",{type:"checkbox"});cb.checked=st.i.indexOf(o)>-1;cbs.push([cb,o]);
+    cb.addEventListener("change",function(){
+      if(r.s&&cb.checked)cbs.forEach(function(p){if(p[0]!==cb)p[0].checked=false});
+      st.i=cbs.filter(function(p){return p[0].checked}).map(function(p){return p[1]});
+      paint();save();
+    });
+    panel.append(el("label",{class:"opt"},cb,el("span",{},o)));
+  });
+  other.value=st.o||"";
+  other.addEventListener("input",function(){st.o=other.value;save()});
+  panel.append(other);d.append(panel);paint();
+  return d;
+}
+
+function rowEl(r){
+  var st=rowState(r.id);
+  var ne=sel("e-"+r.id,EX,st.e,function(v){st.e=v;save()});
+  var nn=sel("n-"+r.id,LV,st.n,function(v,s){st.n=v;s.dataset.n=v;save()});
+  if(st.n)nn.dataset.n=st.n;
+  return el("div",{class:"row"},
+    el("div",{class:"rl"},r.l),
+    multi(r,st),
+    el("div",{class:"sub"},fld("Étendue",ne,"e-"+r.id),fld("Niveau",nn,"n-"+r.id)));
+}
+
+function maxLevel(key){
+  var best="";
+  SEC[key].groups.forEach(function(g){g.rows.forEach(function(r){
+    var n=(S.r[r.id]||{}).n;if(n&&(!best||RANK[n]>RANK[best]))best=n})});
+  return best;
+}
+
+function conclEl(key){
+  var st=conState(key),sec=SEC[key];
+  var hint=el("p",{class:"hint"});
+  hintList.push(function(){var m=maxLevel(key);hint.textContent=m?"Niveau le plus élevé relevé dans les lignes ci-dessus : "+m+".":"Aucun niveau relevé dans les lignes ci-dessus."});
+  var sn=sel("cn-"+key,LV,st.n,function(v,s){st.n=v;s.dataset.n=v;save()});
+  if(st.n)sn.dataset.n=st.n;
+  var se=sel("ce-"+key,EX,st.e,function(v){st.e=v;save()});
+  var ta=el("textarea",{id:"ct-"+key,rows:3});ta.value=st.t||"";
+  ta.addEventListener("input",function(){st.t=ta.value;save()});
+  return el("section",{class:"concl"},el("h3",{},sec.concl),hint,
+    el("div",{class:"sub"},fld("Étendue",se,"ce-"+key),fld("Niveau",sn,"cn-"+key)),
+    el("div",{class:"fld",style:"margin-top:10px"},el("label",{for:"ct-"+key},"Avis et commentaires"),ta));
+}
+
+
+/* ---------- Géolocalisation et cadastre ---------- */
+function setField(k,v){S.f[k]=v;var i=document.getElementById("f-"+k);if(i)i.value=v}
+function parseGps(t){
+  var m=String(t||"").match(/(-?\d{1,3}(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:[.,]\d+)?)/);
+  if(!m)return null;
+  var a=parseFloat(m[1].replace(",",".")),b=parseFloat(m[2].replace(",","."));
+  if(isNaN(a)||isNaN(b)||Math.abs(a)>90||Math.abs(b)>180)return null;
+  return {lat:a,lon:b};
+}
+function getJSON(u){return fetch(u).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
+function parcelles(geom){return getJSON("https://apicarto.ign.fr/api/cadastre/parcelle?geom="+encodeURIComponent(JSON.stringify(geom))).then(function(j){return j.features||[]})}
+function lookup(lat,lon,msg,btns){
+  var pt={type:"Point",coordinates:[lon,lat]},d=0.00015;
+  var box={type:"Polygon",coordinates:[[[lon-d,lat-d],[lon+d,lat-d],[lon+d,lat+d],[lon-d,lat+d],[lon-d,lat-d]]]};
+  var proche=false;
+  msg.textContent="Recherche de la parcelle cadastrale…";
+  var cad=parcelles(pt).then(function(fs){
+    if(fs.length)return fs[0];
+    proche=true;return parcelles(box).then(function(fs2){return fs2[0]||null});
+  });
+  var adr=getJSON("https://data.geopf.fr/geocodage/reverse?lon="+lon+"&lat="+lat+"&limit=1").then(function(j){return (j.features||[])[0]||null}).catch(function(){return null});
+  return Promise.all([cad,adr]).then(function(res){
+    var p=res[0],a=res[1],out=[];
+    if(p){
+      var q=p.properties,pref=q.com_abs&&q.com_abs!=="000"?q.com_abs+" ":"";
+      setField("cad",pref+q.section+" "+q.numero+" ("+q.idu+")");
+      S.f.cadcom=q.nom_com;S.f.cadsurf=q.contenance;
+      out.push("Parcelle "+pref+q.section+" "+q.numero+", "+q.nom_com+(q.contenance?", "+q.contenance.toLocaleString("fr-FR")+" m²":"")+(proche?" (la plus proche, à vérifier)":"")+".");
+    }else out.push("Aucune parcelle trouvée ici : rapprochez-vous du bâtiment.");
+    if(a){
+      var r=a.properties;
+      if(!S.f.adresse)setField("adresse",r.name||"");
+      if(!S.f.cp)setField("cp",r.postcode||"");
+      if(!S.f.ville)setField("ville",r.city||"");
+      out.push("Adresse la plus proche : "+r.label+".");
+    }
+    save();
+    msg.textContent=out.join(" ")+" ";
+    msg.append(el("a",{href:"https://www.geoportail.gouv.fr/carte?c="+lon+","+lat+"&z=19&l0=ORTHOIMAGERY.ORTHOPHOTOS::GEOPORTAIL:OGC:WMTS(1)&l1=CADASTRALPARCELS.PARCELLAIRE_EXPRESS::GEOPORTAIL:OGC:WMTS(1)&permalink=yes",target:"_blank",rel:"noopener"},"Voir sur la carte"));
+  }).catch(function(){msg.textContent="Pas de réseau pour chercher la parcelle. Les coordonnées GPS sont gardées : réessayez « Chercher la parcelle » plus tard."});
+}
+function locBox(){
+  var msg=el("p",{class:"locmsg",role:"status","aria-live":"polite"});
+  var b1=el("button",{class:"btn",type:"button"},"📍 Me localiser");
+  var b2=el("button",{class:"btn alt",type:"button"},"Chercher la parcelle");
+  function busy(on){b1.disabled=b2.disabled=on}
+  b1.addEventListener("click",function(){
+    if(!navigator.geolocation){msg.textContent="Ce navigateur ne permet pas la localisation.";return}
+    busy(true);msg.textContent="Recherche de la position GPS…";
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var lat=+pos.coords.latitude.toFixed(6),lon=+pos.coords.longitude.toFixed(6);
+      setField("gps",lat+", "+lon);S.f.gpsprec=Math.round(pos.coords.accuracy);save();
+      lookup(lat,lon,msg).then(function(){busy(false);msg.prepend("Position trouvée (± "+S.f.gpsprec+" m). ")});
+    },function(err){
+      busy(false);
+      msg.textContent=err.code===1?"Localisation refusée : autorisez-la pour ce site dans les réglages du téléphone, puis réessayez.":"Position introuvable pour l'instant. Réessayez à découvert, ou tapez les coordonnées.";
+    },{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+  });
+  b2.addEventListener("click",function(){
+    var c=parseGps(S.f.gps);
+    if(!c){msg.textContent="Tapez d'abord les coordonnées GPS (ex. 43.5297, 5.4474) ou utilisez « Me localiser ».";return}
+    busy(true);lookup(c.lat,c.lon,msg).then(function(){busy(false)});
+  });
+  return el("div",{class:"loc"},b1,b2,msg);
+}
+
+/* ---------- Onglets ---------- */
+function buildId(){
+  var f=el("div",{});
+  f.append(el("p",{class:"notice"},el("b",{},"Cadre d'emploi. "),"L'évaluation bâtimentaire en situation opérationnelle n'est valable que dans le cadre d'une mission de secours et ne remplace pas l'expertise de professionnels qualifiés. Fiche réservée aux agents formés RB de l'ECASC, à annexer au compte rendu de secours."));
+  ID_GROUPS.forEach(function(g){
+    var card=el("div",{class:"card"});
+    if(g.g==="Localisation")card.append(locBox());
+    card.append(el("div",{class:"fgrid"},g.f.map(idField)));
+    f.append(el("div",{class:"grp"},g.g),card);
+  });
+  return f;
+}
+function buildSec(key){
+  var sec=SEC[key],f=el("div",{});
+  f.append(el("div",{class:"band"},sec.title));
+  f.append(el("p",{class:"legend"},el("b",{},"Étendue : "),"L localisés, G généralisés. ",el("b",{},"Niveau : "),"N-L nuls à légers, M modérés, I importants, DI danger immédiat."));
+  sec.groups.forEach(function(g){
+    if(g.g)f.append(el("div",{class:"grp"},g.g));
+    f.append(el("div",{class:"rows"},g.rows.map(rowEl)));
+  });
+  f.append(conclEl(key));
+  return f;
+}
+var chipBox,sendMsg;
+function buildSyn(){
+  var f=el("div",{});
+  f.append(el("div",{class:"band"},"Matrice et synthèse"));
+  f.append(el("div",{class:"grp"},"Niveaux conclus"));
+  chipBox=el("div",{class:"card chips"});f.append(chipBox);
+  f.append(el("div",{class:"grp"},"Évaluation finale"));
+  var colSel=sel("f-couleur",COLORS,S.f.couleur,function(v,s){S.f.couleur=v;s.dataset.c=v;save()});
+  if(S.f.couleur)colSel.dataset.c=S.f.couleur;
+  var ph=sel("f-photos",["Oui","Non"],S.f.photos,function(v){S.f.photos=v;save()});
+  var dc=sel("f-declass",["Oui","Non"],S.f.declass,function(v){S.f.declass=v;save()});
+  var av=el("textarea",{id:"f-avisfin",rows:3});av.value=S.f.avisfin||"";
+  av.addEventListener("input",function(){S.f.avisfin=av.value;save()});
+  f.append(el("div",{class:"card fgrid"},
+    fld("Couleur finale (N / R / J / V)",colSel,"f-couleur","full"),
+    fld("Photos / vidéos disponibles",ph,"f-photos"),
+    fld("Possibilité de déclassement",dc,"f-declass"),
+    fld("Avis et commentaires finaux",av,"f-avisfin","full")));
+  f.append(el("div",{class:"grp"},"Propositions d'idées de manœuvre au COS"));
+  var cs=rowState("cos");
+  var cosRow={id:"cos",l:"Mesures proposées",o:COS};
+  f.append(el("div",{class:"card fgrid"},el("div",{class:"fld full"},multi(cosRow,cs))));
+  f.append(el("p",{class:"legend"},"Le COS doit obligatoirement faire un compte rendu au DOS ou à son représentant après toute évaluation bâtimentaire."));
+  var rep=el("textarea",{id:"rep",readonly:true,hidden:true});
+  var conf=el("div",{class:"confirm",hidden:true},
+    el("p",{},"Effacer toutes les données de cette fiche ? Cette action est définitive."),
+    el("div",{class:"actions"},
+      el("button",{class:"btn danger",type:"button",onclick:function(){reset()}},"Tout effacer"),
+      el("button",{class:"btn alt",type:"button",onclick:function(){conf.hidden=true}},"Annuler")));
+  sendMsg=el("p",{class:"sendmsg",role:"status","aria-live":"polite"});
+  f.append(el("div",{class:"actions"},
+    el("button",{class:"btn",type:"button",onclick:function(){sendFiche()}},"📤 Envoyer la fiche"),
+    el("button",{class:"btn alt",type:"button",onclick:function(){makePdf()}},"📄 Télécharger le PDF"),
+    el("button",{class:"btn alt",type:"button",onclick:function(){copyReport(rep)}},"Copier le compte rendu"),
+    el("button",{class:"btn alt",type:"button",onclick:function(){conf.hidden=false}},"Nouvelle fiche")),sendMsg,conf,rep);
+  paintSend();
+  return f;
+}
+
+var panes={};
+function build(){
+  condList=[];hintList=[];
+  var main=$("#main");main.textContent="";
+  if(!S.f.dt)S.f.dt=nowLocal();
+  panes.id=buildId();panes.sol=buildSec("sol");panes.env=buildSec("env");
+  panes.str=buildSec("str");panes.ens=buildSec("ens");panes.syn=buildSyn();
+  ORDER.forEach(function(k){panes[k].hidden=k!==cur;panes[k].setAttribute("role","tabpanel");main.append(panes[k])});
+  var tabs=$("#tabs");tabs.textContent="";
+  ORDER.forEach(function(k){
+    var b=el("button",{class:"tab",type:"button",role:"tab","aria-selected":String(k===cur),"data-k":k,onclick:function(){show(k)}},TABNAMES[k],el("i",{class:"dot",hidden:true}));
+    tabs.append(b);
+  });
+  refreshAll();
+}
+function show(k){
+  cur=k;
+  ORDER.forEach(function(x){panes[x].hidden=x!==k});
+  document.querySelectorAll(".tab").forEach(function(b){b.setAttribute("aria-selected",String(b.dataset.k===k))});
+  window.scrollTo(0,0);refreshAll();
+}
+
+/* ---------- Mises à jour ---------- */
+function levelLabel(v){var m=LV.filter(function(x){return x[0]===v})[0];return m?m[1]:""}
+function refreshAll(){
+  condList.forEach(function(c){c.w.hidden=!c.f(S.f)});
+  hintList.forEach(function(h){h()});
+  var keys=["sol","env","str","ens"],n=0;
+  keys.forEach(function(k){if(conState(k).n)n++});
+  ["adresse","ville","eval1","couleur"].forEach(function(k){if(S.f[k])n++});
+  $("#prog").textContent=n+"/8";$("#barfill").style.width=(n/8*100)+"%";
+  document.querySelectorAll(".tab").forEach(function(b){
+    var k=b.dataset.k,dot=b.querySelector(".dot"),done=false;
+    if(keys.indexOf(k)>-1)done=!!conState(k).n;
+    else if(k==="syn")done=!!S.f.couleur;
+    else if(k==="id")done=!!(S.f.adresse&&S.f.ville&&S.f.eval1);
+    dot.hidden=!done;
+  });
+  if(chipBox){
+    chipBox.textContent="";
+    keys.forEach(function(k){
+      var n=conState(k).n,c=el("div",{class:"chip"},el("small",{},SEC[k].tab),el("b",{},n?levelLabel(n):"Non renseigné"));
+      if(n)c.dataset.n=n;chipBox.append(c);
+    });
+  }
+}
+
+
+/* ---------- Envoi au tableau des résultats ---------- */
+function lvl(k){var c=conState(k);return c.n?c.n+(c.e?" ("+c.e+")":""):""}
+function payload(){
+  var f=S.f,cs=S.r.cos;
+  return {id:S.id,row:{
+    "ID fiche":S.id,
+    "Envoyée le":new Date().toLocaleString("fr-FR"),
+    "Date du relevé":(f.dt||"").replace("T"," "),
+    "Évaluateur 1":f.eval1||"","Participant 2":f.part2||"","Qualité":f.qual||"","ID binôme":f.binome||"",
+    "Adresse":f.adresse||"","Code postal":f.cp||"","Ville":f.ville||"",
+    "Coord. GPS":f.gps||"","Parcelle cadastrale":f.cad||"","Commune (cadastre)":f.cadcom||"","N° CRSS":f.crss||"",
+    "Origine des dommages":f.origine||"","Destination du bâtiment":f.dest||"",
+    "Couleur finale":f.couleur||"",
+    "Site-Sol":lvl("sol"),"Environnement":lvl("env"),"Structure":lvl("str"),"ENS":lvl("ens"),
+    "Mesures proposées au COS":cs&&cs.i.length?cs.i.join(" ; ")+(cs.o?" ; "+cs.o:""):"",
+    "Compte rendu complet":report(),
+    "Données brutes":JSON.stringify({f:S.f,r:S.r,c:S.c})
+  }};
+}
+function queue(){try{return JSON.parse(localStorage.getItem(QKEY)||"[]")}catch(e){return []}}
+function setQueue(q){try{localStorage.setItem(QKEY,JSON.stringify(q))}catch(e){}}
+function paintSend(){
+  if(!sendMsg)return;
+  var n=queue().length;
+  if(!ENDPOINT)sendMsg.textContent="L'envoi n'est pas encore relié au tableau des résultats.";
+  else if(n)sendMsg.textContent=n+" fiche(s) en attente d'envoi : elles partiront dès que le réseau revient.";
+  else if(S.sent)sendMsg.textContent="Cette fiche a été envoyée. Si vous la modifiez, renvoyez-la : elle sera mise à jour.";
+  else sendMsg.textContent="";
+}
+var flushing=false;
+function flush(){
+  var q=queue();
+  if(!ENDPOINT||!q.length||flushing||navigator.onLine===false){paintSend();return Promise.resolve(false)}
+  flushing=true;
+  var item=q[0];
+  return fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(item)})
+    .then(function(){
+      setQueue(queue().filter(function(x){return x.id!==item.id}));
+      flushing=false;return flush().then(function(){return true});
+    })
+    .catch(function(){flushing=false;paintSend();return false});
+}
+function sendFiche(){
+  if(!ENDPOINT){toast("Envoi pas encore configuré");paintSend();return}
+  if(!S.f.adresse&&!S.f.gps){toast("Ajoutez au moins l'adresse ou le GPS");return}
+  var p=payload();
+  setQueue(queue().filter(function(x){return x.id!==p.id}).concat([p]));
+  S.sent=new Date().toISOString();save();
+  toast("Envoi en cours…");
+  flush().then(function(ok){toast(ok?"Fiche envoyée":"Pas de réseau : la fiche partira plus tard");paintSend()});
+}
+window.addEventListener("online",flush);
+setTimeout(flush,1500);
+
+
+/* ---------- Rapport PDF ---------- */
+function latin(t){return String(t).replace(/[–—]/g,"-").replace(/…/g,"...").replace(/œ/g,"oe").replace(/Œ/g,"OE").replace(/[’‘]/g,"'").replace(/[“”«»]/g,'"').replace(/[^\x00-\xFF]/g,"")}
+function makePdf(){
+  if(!window.jspdf){toast("PDF indisponible hors réseau : utilisez Imprimer");window.print();return}
+  var doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,M=15,y=0,lh=5;
+  var COL={N:[17,17,17],R:[198,40,40],J:[224,190,0],V:[63,143,47]};
+  function page(){doc.addPage();y=M}
+  function need(h){if(y+h>297-M)page()}
+  doc.setFillColor(28,43,69);doc.rect(0,0,W,24,"F");
+  doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(16);
+  doc.text(latin("FICHE DE RELEVÉ DES DOMMAGES EBRAS"),M,11);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);
+  doc.text(latin("Version 4, sept. 2024 · Fiche "+S.id+" · éditée le "+new Date().toLocaleString("fr-FR")),M,18);
+  y=32;doc.setTextColor(23,32,44);
+  var c=S.f.couleur;
+  if(c){
+    var rgb=COL[c];doc.setFillColor(rgb[0],rgb[1],rgb[2]);doc.roundedRect(M,y-5,W-2*M,11,2,2,"F");
+    doc.setTextColor(c==="J"?40:255,c==="J"?32:255,c==="J"?0:255);doc.setFont("helvetica","bold");doc.setFontSize(12);
+    var lab=(COLORS.filter(function(x){return x[0]===c})[0]||[,c])[1];
+    doc.text(latin("ÉVALUATION FINALE : "+lab.toUpperCase()),M+4,y+2.3);
+    doc.setTextColor(23,32,44);y+=14;
+  }
+  report().split("\n").slice(2).forEach(function(line){
+    if(!line){y+=2;return}
+    var head=line===line.toUpperCase()&&line.indexOf("- ")!==0&&/[A-Z]/.test(line);
+    if(head){
+      need(12);y+=2;doc.setFillColor(251,227,211);doc.rect(M,y-4.2,W-2*M,6.5,"F");
+      doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(122,47,12);
+      doc.text(latin(line),M+2,y);doc.setTextColor(23,32,44);y+=lh+2;return;
+    }
+    doc.setFont("helvetica",/^(Conclusion|Couleur finale)/.test(line)?"bold":"normal");doc.setFontSize(9.5);
+    doc.splitTextToSize(latin(line),W-2*M-2).forEach(function(w){need(lh);doc.text(w,M+1,y);y+=lh});
+  });
+  need(30);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(9.5);
+  doc.text(latin("Signature de l'évaluateur :"),M,y);doc.text(latin("Visa du COS :"),W/2+5,y);
+  doc.setDrawColor(180,180,180);doc.rect(M,y+2,W/2-M-5,20);doc.rect(W/2+5,y+2,W/2-M-5,20);
+  var n=doc.getNumberOfPages();
+  for(var i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(7.5);doc.setTextColor(110,110,110);
+    doc.text(latin("Adaptation de la fiche EBRAS V4 (ECASC). Ne remplace pas l'expertise de professionnels qualifiés."),M,290);
+    doc.text(i+" / "+n,W-M,290,{align:"right"})}
+  var nm=("Fiche EBRAS "+(S.f.adresse||S.f.ville||S.id)+" "+(S.f.dt||"").slice(0,10)).replace(/[\\/:*?"<>|]/g,"-").trim();
+  doc.save(nm+".pdf");toast("PDF créé");
+}
+
+/* ---------- Compte rendu ---------- */
+function report(){
+  var L=[],fmt=function(v){return v||"—"};
+  L.push("FICHE DE RELEVÉ DES DOMMAGES EBRAS (V4, sept. 2024)","");
+  ID_GROUPS.forEach(function(g){
+    var part=[];
+    g.f.forEach(function(d){
+      if(d.show&&!d.show(S.f))return;
+      var v=S.f[d.k];if(!v)return;
+      if(d.k==="dt")v=v.replace("T"," ");
+      part.push("- "+d.l+" : "+v);
+    });
+    if(part.length){L.push(g.g.toUpperCase());L=L.concat(part);L.push("")}
+  });
+  ["sol","env","str","ens"].forEach(function(k){
+    var sec=SEC[k],part=[];
+    sec.groups.forEach(function(g){g.rows.forEach(function(r){
+      var st=S.r[r.id];if(!st||!(st.i.length||st.n||st.e))return;
+      var s="- "+r.l+" : "+(st.i.length?st.i.join(", "):"—");
+      if(st.o)s+=" ("+st.o+")";
+      if(st.e)s+=" | étendue "+st.e;
+      if(st.n)s+=" | niveau "+st.n;
+      part.push(s);
+    })});
+    var c=conState(k);
+    L.push(sec.title.toUpperCase());
+    L=L.concat(part);
+    L.push("Conclusion : niveau "+fmt(c.n)+(c.e?", étendue "+c.e:""));
+    if(c.t)L.push("Avis : "+c.t);
+    L.push("");
+  });
+  L.push("SYNTHÈSE");
+  L.push("Couleur finale : "+fmt(S.f.couleur));
+  L.push("Photos / vidéos disponibles : "+fmt(S.f.photos));
+  L.push("Possibilité de déclassement : "+fmt(S.f.declass));
+  if(S.f.avisfin)L.push("Avis finaux : "+S.f.avisfin);
+  var cs=S.r.cos;
+  if(cs&&cs.i.length){L.push("","PROPOSITIONS AU COS");cs.i.forEach(function(x){L.push("- "+x)});if(cs.o)L.push("Autres mesures : "+cs.o)}
+  return L.join("\n");
+}
+var toastT;
+function toast(m){var t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},2200)}
+function copyReport(box){
+  var txt=report();
+  function fallback(){box.value=txt;box.hidden=false;box.focus();box.select();toast("Sélectionnez puis copiez le texte")}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){toast("Compte rendu copié")},fallback);
+    }else fallback();
+  }catch(e){fallback()}
+}
+function reset(){
+  S={f:{},r:{},c:{},id:newId()};
+  try{localStorage.removeItem(KEY)}catch(e){}
+  cur="id";build();window.scrollTo(0,0);toast("Fiche effacée");
+}
+
+document.addEventListener("click",function(e){
+  document.querySelectorAll("details.ms[open]").forEach(function(d){if(!d.contains(e.target))d.open=false});
+});
+build();
+})();
+</script>
+
+</body></html>
