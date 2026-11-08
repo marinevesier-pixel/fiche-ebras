@@ -638,6 +638,38 @@ window.addEventListener("online",flush);
 setTimeout(flush,1500);
 
 
+/* ---------- Envoi par e-mail ---------- */
+var MKEY="ebras-v4-email";
+function mailPrefs(){try{var m=JSON.parse(localStorage.getItem(MKEY)||"{}");return {me:m.me||"",plus:m.plus||""}}catch(e){return {me:"",plus:""}}}
+function setMailPrefs(m){try{localStorage.setItem(MKEY,JSON.stringify(m))}catch(e){}}
+function mailList(t){return String(t||"").split(/[,;\s]+/).filter(function(a){return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a)})}
+function mailBox(){
+  var m=mailPrefs();
+  var me=el("input",{id:"m-me",type:"text",inputmode:"email",autocomplete:"email",autocapitalize:"off",placeholder:"prenom.nom@exemple.fr"});
+  me.value=m.me;
+  var plus=el("input",{id:"m-plus",type:"text",inputmode:"email",autocomplete:"off",autocapitalize:"off",placeholder:"Autres adresses, séparées par une virgule"});
+  plus.value=m.plus;
+  function keep(){setMailPrefs({me:me.value.trim(),plus:plus.value.trim()})}
+  me.addEventListener("input",keep);plus.addEventListener("input",keep);
+  return el("div",{},el("div",{class:"grp"},"Envoi par e-mail"),
+    el("div",{class:"card fgrid"},
+      fld("Mon adresse e-mail (gardée sur ce téléphone)",me,"m-me","full"),
+      fld("Autres destinataires (facultatif)",plus,"m-plus","full")),
+    el("div",{class:"actions"},el("button",{class:"btn alt",type:"button",onclick:function(){sendMail()}},"✉️ Envoyer par e-mail")));
+}
+function sendMail(){
+  var m=mailPrefs(),to=mailList(m.me).concat(mailList(m.plus));
+  if(!to.length){toast("Indiquez une adresse e-mail valide");return}
+  var f=S.f,sujet="Fiche EBRAS - "+(f.adresse||f.ville||S.id)+(f.couleur?" - "+f.couleur:"");
+  var corps=report();
+  function go(b){window.location.href="mailto:"+to.join(",")+"?subject="+encodeURIComponent(sujet)+"&body="+encodeURIComponent(b)}
+  if(encodeURIComponent(corps).length>6000){
+    try{navigator.clipboard.writeText(corps)}catch(e){}
+    go("Compte rendu copié : collez-le ici (appui long, puis Coller).");
+    toast("Compte rendu copié : collez-le dans le mail");
+  }else go(corps);
+}
+
 /* ---------- Rapport PDF ---------- */
 function latin(t){return String(t).replace(/[–—]/g,"-").replace(/…/g,"...").replace(/œ/g,"oe").replace(/Œ/g,"OE").replace(/[’‘]/g,"'").replace(/[“”«»]/g,'"').replace(/[^\x00-\xFF]/g,"")}
 function makePdf(){
