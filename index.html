@@ -655,7 +655,7 @@ function mailBox(){
     el("div",{class:"card fgrid"},
       fld("Mon adresse e-mail (gardée sur ce téléphone)",me,"m-me","full"),
       fld("Autres destinataires (facultatif)",plus,"m-plus","full")),
-    el("div",{class:"actions"},el("button",{class:"btn alt",type:"button",onclick:function(){sendMail()}},"✉️ Envoyer par e-mail")));
+    el("div",{class:"actions"},el("button",{class:"btn alt",type:"button",onclick:function(){sendMail()}},"✉️ Envoyer le texte par e-mail"),el("button",{class:"btn",type:"button",onclick:function(){makePdf(true)}},"📎 Envoyer le PDF par e-mail")));
 }
 function sendMail(){
   var m=mailPrefs(),to=mailList(m.me).concat(mailList(m.plus));
@@ -670,9 +670,23 @@ function sendMail(){
   }else go(corps);
 }
 
+function sharePdf(doc,nm){
+  var m=mailPrefs(),to=mailList(m.me).concat(mailList(m.plus));
+  var f=S.f,sujet="Fiche EBRAS - "+(f.adresse||f.ville||S.id)+(f.couleur?" - "+f.couleur:"");
+  var file=null;
+  try{file=new File([doc.output("blob")],nm+".pdf",{type:"application/pdf"})}catch(e){}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    if(to.length){try{navigator.clipboard.writeText(to.join(", ")).catch(function(){})}catch(e){}}
+    navigator.share({files:[file],title:sujet,text:"Fiche EBRAS en pièce jointe (PDF)."}).then(function(){toast(to.length?"Adresse copiée : collez-la dans « À »":"PDF prêt à envoyer")},function(err){if(err&&err.name!=="AbortError")toast("Partage impossible")});
+  }else{
+    doc.save(nm+".pdf");
+    toast("PDF téléchargé : joignez-le au mail");
+    if(to.length)window.location.href="mailto:"+to.join(",")+"?subject="+encodeURIComponent(sujet)+"&body="+encodeURIComponent("Fiche EBRAS en pièce jointe (PDF).");
+  }
+}
 /* ---------- Rapport PDF ---------- */
 function latin(t){return String(t).replace(/[–—]/g,"-").replace(/…/g,"...").replace(/œ/g,"oe").replace(/Œ/g,"OE").replace(/[’‘]/g,"'").replace(/[“”«»]/g,'"').replace(/[^\x00-\xFF]/g,"")}
-function makePdf(){
+function makePdf(share){
   if(!window.jspdf){toast("PDF indisponible hors réseau : utilisez Imprimer");window.print();return}
   var doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,M=15,y=0,lh=5;
   var COL={N:[17,17,17],R:[198,40,40],J:[224,190,0],V:[63,143,47]};
@@ -711,7 +725,7 @@ function makePdf(){
     doc.text(latin("Adaptation de la fiche EBRAS V4 (ECASC). Ne remplace pas l'expertise de professionnels qualifiés."),M,290);
     doc.text(i+" / "+n,W-M,290,{align:"right"})}
   var nm=("Fiche EBRAS "+(S.f.adresse||S.f.ville||S.id)+" "+(S.f.dt||"").slice(0,10)).replace(/[\\/:*?"<>|]/g,"-").trim();
-  doc.save(nm+".pdf");toast("PDF créé");
+  if(share){sharePdf(doc,nm);return}doc.save(nm+".pdf");toast("PDF créé");
 }
 
 /* ---------- Compte rendu ---------- */
