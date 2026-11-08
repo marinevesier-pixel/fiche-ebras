@@ -295,7 +295,7 @@ var COS=["Évacuation des occupants du bâtiment","Interdiction temporaire d'acc
 
 /* ---------- État ---------- */
 /* Adresse du script Google qui range chaque fiche envoyée dans le tableau des résultats */
-var ENDPOINT="";
+var ENDPOINT="https://script.google.com/macros/s/AKfycbxGFc8Nderz_cNCqKhBO9baX9Fa8h0d4Eg2eaExIojGG8C9F8TXogRdbisl9orfCQo-HA/exec";
 var KEY="ebras-v4-brouillon",QKEY="ebras-v4-envois";
 var S={f:{},r:{},c:{}};
 try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&typeof p==="object"){S.f=p.f||{};S.r=p.r||{};S.c=p.c||{};S.id=p.id;S.sent=p.sent}}}catch(e){}
