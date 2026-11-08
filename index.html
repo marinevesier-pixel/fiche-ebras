@@ -683,7 +683,7 @@ function sharePdf(doc,nm){
     if(to.length)window.location.href="mailto:"+to.join(",")+"?subject="+encodeURIComponent(sujet)+"&body="+encodeURIComponent("Fiche EBRAS en pièce jointe (PDF).");
   }
 }
-* ---------- Photos ---------- */
+/* ---------- Photos ---------- */
 var PKEY="ebras-v4-photos",PMAX=12;
 var P=[];
 try{P=JSON.parse(localStorage.getItem(PKEY)||"[]")}catch(e){P=[]}
